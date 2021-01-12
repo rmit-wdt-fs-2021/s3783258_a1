@@ -10,6 +10,7 @@ namespace s3783258_a1.repository
 {
     class DatabaseAccess
     {
+        //Creates the tables in the database given in the connection string
         public void CreateTables(string connectionString)
         {
             using var connection = new SqlConnection(connectionString);
@@ -18,7 +19,14 @@ namespace s3783258_a1.repository
             var command = connection.CreateCommand();
             command.CommandText = File.ReadAllText("sql/CreateTables.sql");
 
-            command.ExecuteNonQuery();
+            //Try to execute the query, else the tables already exist
+            try
+            {
+                command.ExecuteNonQuery();
+            } catch (SqlException e)
+            {
+                Console.WriteLine("Error: Tables Already Exist");
+            }
         }
     }
 }
