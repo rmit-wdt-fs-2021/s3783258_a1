@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Data;
+using s3783258_a1.utilities;
+using s3783258_a1.model;
 
 namespace s3783258_a1.repository
 {
@@ -37,7 +39,8 @@ namespace s3783258_a1.repository
             using var connection = new SqlConnection(connectionString);
             connection.Open();
 
-            var command = new SqlCommand("DataCount", connection) { CommandType = CommandType.StoredProcedure };
+            var command = new SqlCommand("DataCount", connection);
+            command.CommandType = CommandType.StoredProcedure;
             int count = (int)command.ExecuteScalar();
             
             if (count > 0)
@@ -49,9 +52,44 @@ namespace s3783258_a1.repository
             }
         }
 
-        public void PopulateDatabase()
+        //Populate the database from webservice if there are no rows
+        public void PopulateDatabase(string connectionString)
         {
-            
+            if (DataCount(connectionString))
+            {
+                using var connection = new SqlConnection(connectionString);
+                connection.Open();
+
+                RestData rd = new RestData();
+                List<Customer> customers = rd.GetCustomers();
+                List<Login> logins = rd.GetLogins();
+
+                foreach (var customer in customers)
+                {
+                    var command = new SqlCommand("CreateCustomer", connection);
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.AddWithValue("@CUSTOMERID", customer.CustomerID);
+                    command.Parameters.AddWithValue("@NAME", customer.Name);
+                    command.Parameters.AddWithValue("@ADDRESS", customer.Address);
+                    command.Parameters.AddWithValue("@CITY", customer.City);
+                    command.Parameters.AddWithValue("@POSTCODE", customer.PostCode);
+
+                    command.ExecuteNonQuery();
+                }
+
+                foreach (var login in logins)
+                {
+                    var command = new SqlCommand("CreateLogin", connection);
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.AddWithValue("@LoginID", login.LoginID);
+                    command.Parameters.AddWithValue("@CustomerID", login.CustomerID);
+                    command.Parameters.AddWithValue("@PasswordHash", login.PasswordHash);
+
+                    command.ExecuteNonQuery();
+                }
+            }
         }
 
     }
