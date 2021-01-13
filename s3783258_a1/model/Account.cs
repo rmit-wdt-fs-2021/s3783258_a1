@@ -12,5 +12,6 @@ namespace s3783258_a1.model
         public char AccountType { get; set; }
         public int CustomerID { get; set; }
         public double Balance { get; set; }
+        public List<Transaction> Transactions { get; set; }
     }
 }

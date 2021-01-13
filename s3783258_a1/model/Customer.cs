@@ -13,5 +13,6 @@ namespace s3783258_a1.model
         public string Address { get; set; }
         public string City { get; set; }
         public string PostCode { get; set; }
+        public List<Account> Accounts { get; set; }
     }
 }
