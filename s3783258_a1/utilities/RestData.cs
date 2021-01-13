@@ -24,7 +24,7 @@ namespace s3783258_a1.utilities
         {
             string url = "http://coreteaching01.csit.rmit.edu.au/~e87149/wdt/services/customers/";
             string customerJson = http.GetStringAsync(url).Result;
-            customers = JsonConvert.DeserializeObject<List<Customer>>(customerJson, new JsonSerializerSettings { DateFormatString = "dd/MM/yyyy" });
+            customers = JsonConvert.DeserializeObject<List<Customer>>(customerJson, new JsonSerializerSettings { DateFormatString = "dd/MM/yyyy hh:mm:ss tt" });
             return customers;
         }
 

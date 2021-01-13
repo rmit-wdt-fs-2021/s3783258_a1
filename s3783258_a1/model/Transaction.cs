@@ -14,7 +14,7 @@ namespace s3783258_a1.model
         public int DestinationAccountNumber { get; set; }
         public double Amount { get; set; }
         public string Comment { get; set; }
-        public DateTime TransatcionTimeUtc { get; set; }
+        public DateTime TransactionTimeUtc { get; set; }
 
     }
 }

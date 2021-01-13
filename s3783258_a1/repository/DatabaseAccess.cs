@@ -76,6 +76,41 @@ namespace s3783258_a1.repository
                     command.Parameters.AddWithValue("@POSTCODE", customer.PostCode);
 
                     command.ExecuteNonQuery();
+
+                    foreach (var account in customer.Accounts)
+                    {
+                        var accountCommand = new SqlCommand("CreateAccount", connection);
+                        accountCommand.CommandType = CommandType.StoredProcedure;
+
+                        accountCommand.Parameters.AddWithValue("@AccountNumber", account.AccountNumber);
+                        accountCommand.Parameters.AddWithValue("@AccountType", account.AccountType);
+                        accountCommand.Parameters.AddWithValue("@CustomerID", account.CustomerID);
+                        accountCommand.Parameters.AddWithValue("@Balance", account.Balance);
+
+                        accountCommand.ExecuteNonQuery();
+
+                        foreach (var transaction in account.Transactions)
+                        {
+                            var transCommand = new SqlCommand("CreateTransaction", connection);
+                            transCommand.CommandType = CommandType.StoredProcedure;
+
+                            transaction.TransactionType = 'D';
+                            transaction.AccountNumber = account.AccountNumber;
+                            transaction.DestinationAccountNumber = account.AccountNumber;
+                            transaction.Amount = account.Balance;
+                            
+                            transaction.Comment = "Initial Deposit";
+
+                            transCommand.Parameters.AddWithValue("@TransactionType", transaction.TransactionType);
+                            transCommand.Parameters.AddWithValue("@AccountNumber", transaction.AccountNumber);
+                            transCommand.Parameters.AddWithValue("@DestinationAccountNumber", transaction.DestinationAccountNumber);
+                            transCommand.Parameters.AddWithValue("@Amount", transaction.Amount);
+                            transCommand.Parameters.AddWithValue("@Comment", transaction.Comment);
+                            transCommand.Parameters.AddWithValue("@TransactionTimeUtc", transaction.TransactionTimeUtc);
+
+                            transCommand.ExecuteNonQuery();
+                        }
+                    }
                 }
 
                 foreach (var login in logins)
