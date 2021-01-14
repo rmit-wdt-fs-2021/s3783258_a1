@@ -69,6 +69,7 @@ Main Menu
 1. Deposit Funds
 2. Withdraw Funds
 3. Transfer Funds
+4. Logout
 
 Enter an option: ";
             Console.WriteLine("Welcome " + db.GetName(currentLogin.CustomerID));
@@ -78,7 +79,7 @@ Enter an option: ";
             while (!valid)
             {
                 var input = Console.ReadLine();
-                if (!int.TryParse(input, out var option) || option < 1 || option > 3)
+                if (!int.TryParse(input, out var option) || option < 1 || option > 4)
                 {
                     Console.Clear();
                     Console.WriteLine("Invalid Input. Please Try Again");
@@ -89,15 +90,22 @@ Enter an option: ";
                 {
                     case 1:
                         valid = true;
-                        DepositMenu();
+                        DepositWithdrawMenu("Deposit");
                         break;
                     case 2:
                         valid = true;
-                        Console.Clear();
+                        DepositWithdrawMenu("Withdraw");
                         break;
                     case 3:
                         valid = true;
                         Console.Clear();
+                        break;
+                    case 4:
+                        valid = true;
+                        Console.Clear();
+                        currentLogin = null;
+                        Console.WriteLine("Successfully Logged Out");
+                        WelcomeMenu();
                         break;
                 }
             }
@@ -157,21 +165,14 @@ Enter an option: ";
             return password;
         }
 
-        private void DepositMenu()
+        private void DepositWithdrawMenu(string type)
         {
             Console.Clear();
             List<Account> custAccounts = db.GetLoginAccounts(currentLogin);
             int accountChoice = 0;
             if (custAccounts != null)
             {
-                Console.WriteLine("Accounts for " + db.GetName(currentLogin.CustomerID) + ":");
-                Console.WriteLine("    Account Number     Account Type        Balance");
-                int num = 1;
-                foreach (var account in custAccounts)
-                { 
-                    Console.WriteLine(String.Format("{0}.  {1,-19}{2,-20}{3,-20}", num, account.AccountNumber, account.AccountType, account.Balance));
-                    num++;
-                }
+                int num = PrintAccounts(custAccounts);
 
                 bool valid = false;
                 while (!valid)
@@ -181,7 +182,6 @@ Enter an option: ";
                     var input = Console.ReadLine();
                     if (!int.TryParse(input, out accountChoice) || accountChoice < 1 || accountChoice > num)
                     {
-                        Console.Clear();
                         Console.WriteLine("Invalid Input. Please Try Again");
                     }
                     else
@@ -190,25 +190,46 @@ Enter an option: ";
                     }
                 }
             }
-            bool validDeposit = false;
-            while (!validDeposit)
+            bool validAmount = false;
+            while (!validAmount)
             {
-                Console.Write("Enter Dollar Amount to Deposit: ");
-                var deposit = Console.ReadLine();
+                Console.Write("Enter Dollar Amount to " + type + ": ");
+                var amount = Console.ReadLine();
 
-                if (!int.TryParse(deposit, out var option) || option < 0)
+                if (!int.TryParse(amount, out var option) || option < 0)
                 {
                     Console.Clear();
                     Console.WriteLine("Invalid Input. Please Try Again");
                 }
                 else
                 {
-                    validDeposit = true;
-                    db.Deposit(option, currentLogin, custAccounts[accountChoice-1].AccountNumber);
+                    validAmount = true;
+                    if (type == "Deposit")
+                    {
+                        db.Deposit(option, currentLogin, custAccounts[accountChoice - 1].AccountNumber);
+                    }
+                    else
+                    {
+                        db.Withdraw(option, currentLogin, custAccounts[accountChoice - 1].AccountNumber);
+                    }
+                    
                 }
             }
             Console.Clear();
             MainMenu();
+        }
+
+        private int PrintAccounts(List<Account> custAccounts)
+        {
+            Console.WriteLine("Accounts for " + db.GetName(currentLogin.CustomerID) + ":");
+            Console.WriteLine("    Account Number     Account Type        Balance");
+            int num = 1;
+            foreach (var account in custAccounts)
+            {
+                Console.WriteLine(String.Format("{0}.  {1,-19}{2,-20}{3,-20}", num, account.AccountNumber, account.AccountType, account.Balance));
+                num++;
+            }
+            return num;
         }
 
     }

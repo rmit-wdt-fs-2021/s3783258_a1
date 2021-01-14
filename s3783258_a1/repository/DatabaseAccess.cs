@@ -238,5 +238,42 @@ namespace s3783258_a1.repository
 
             return accounts;
         }
+
+        //Creates transaction and adjusts balance
+        public void Withdraw(int withdraw, Login currentLogin, int accountNumber)
+        {
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            var command = new SqlCommand("CreateTransaction", connection);
+            command.CommandType = CommandType.StoredProcedure;
+
+
+            Transaction transaction = new Transaction();
+            transaction.TransactionType = 'W';
+            transaction.AccountNumber = accountNumber;
+            transaction.DestinationAccountNumber = accountNumber;
+            transaction.Amount = withdraw;
+            transaction.Comment = "Withdraw";
+            transaction.TransactionTimeUtc = DateTime.UtcNow;
+
+            command.Parameters.AddWithValue("@TransactionType", transaction.TransactionType);
+            command.Parameters.AddWithValue("@AccountNumber", transaction.AccountNumber);
+            command.Parameters.AddWithValue("@DestinationAccountNumber", transaction.DestinationAccountNumber);
+            command.Parameters.AddWithValue("@Amount", transaction.Amount);
+            command.Parameters.AddWithValue("@Comment", transaction.Comment);
+            command.Parameters.AddWithValue("@TransactionTimeUtc", transaction.TransactionTimeUtc);
+
+            //Executes the transaction creation
+            command.ExecuteNonQuery();
+
+            var balanceCMD = connection.CreateCommand();
+            balanceCMD.CommandText = "UPDATE [dbo].[Account] SET Balance = Balance - @Funds WHERE AccountNumber = @AccountNumber";
+            balanceCMD.Parameters.AddWithValue("@Funds", withdraw);
+            balanceCMD.Parameters.AddWithValue("@AccountNumber", accountNumber);
+
+            //Executes the balance adjustment
+            balanceCMD.ExecuteNonQuery();
+        }
     }
 }
