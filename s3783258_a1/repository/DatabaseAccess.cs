@@ -178,5 +178,68 @@ namespace s3783258_a1.repository
 
             return name;
         }
+
+        public void Deposit(int deposit, Login currentLogin, int accountNumber)
+        {
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            var command = new SqlCommand("CreateTransaction", connection);
+            command.CommandType = CommandType.StoredProcedure;
+
+
+            Transaction transaction = new Transaction();
+            transaction.TransactionType = 'D';
+            transaction.AccountNumber = accountNumber;
+            transaction.DestinationAccountNumber = accountNumber;
+            transaction.Amount = deposit;
+            transaction.Comment = "Deposit";
+            transaction.TransactionTimeUtc = DateTime.UtcNow;
+
+            command.Parameters.AddWithValue("@TransactionType", transaction.TransactionType);
+            command.Parameters.AddWithValue("@AccountNumber", transaction.AccountNumber);
+            command.Parameters.AddWithValue("@DestinationAccountNumber", transaction.DestinationAccountNumber);
+            command.Parameters.AddWithValue("@Amount", transaction.Amount);
+            command.Parameters.AddWithValue("@Comment", transaction.Comment);
+            command.Parameters.AddWithValue("@TransactionTimeUtc", transaction.TransactionTimeUtc);
+
+            command.ExecuteNonQuery();
+        }
+
+        public List<Account> GetLoginAccounts (Login currentLogin)
+        {
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM [dbo].[Account] WHERE CustomerID = @CustomerID";
+            command.Parameters.AddWithValue("@CustomerID", currentLogin.CustomerID);
+
+            var table = new DataTable();
+            new SqlDataAdapter(command).Fill(table);
+            List<Account> accounts = table.Select().Select(x => new Account
+            {
+                AccountNumber = (int)x["AccountNumber"],
+                AccountType = Convert.ToChar((string)x["AccountType"]),
+                CustomerID = (int)x["CustomerID"],
+                Balance = Convert.ToDouble((decimal)x["Balance"])
+            }).ToList();
+
+            return accounts;
+        }
+
+        //Change balance in account table
+        public void AddFundsAccount(int funds, int accountNumber)
+        {
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "UPDATE [dbo].[Account] SET Balance = Balance + @Funds WHERE AccountNumber = @AccountNumber";
+            command.Parameters.AddWithValue("@Funds", funds);
+            command.Parameters.AddWithValue("@AccountNumber", accountNumber);
+
+            command.ExecuteNonQuery();
+        }
     }
 }

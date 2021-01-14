@@ -61,7 +61,7 @@ Enter an option: ";
 
         }
         //Main Menu after user logs in
-        public void MainMenu()
+        private void MainMenu()
         {
             string mainMenu = @"
 ==========
@@ -70,6 +70,8 @@ Enter an option: ";
 3. Transfer Funds
 
 Enter and option: ";
+
+            Console.WriteLine(mainMenu);
 
             bool valid = false;
             while (!valid)
@@ -86,7 +88,7 @@ Enter and option: ";
                 {
                     case 1:
                         valid = true;
-                        Console.Clear();
+                        DepositMenu();
                         break;
                     case 2:
                         valid = true;
@@ -103,7 +105,7 @@ Enter and option: ";
         }
 
         //Login with hidden input and comparing login with db
-        public void Login()
+        private void Login()
         {
             bool valid = false;
             while (!valid)
@@ -153,6 +155,61 @@ Enter and option: ";
             }
 
             return password;
+        }
+
+        private void DepositMenu()
+        {
+            Console.Clear();
+            List<Account> custAccounts = db.GetLoginAccounts(currentLogin);
+            int accountChoice = 0;
+            if (custAccounts != null)
+            {
+                Console.WriteLine("Accounts for " + db.GetName(currentLogin.CustomerID) + ":");
+                Console.WriteLine("    Account Number     Account Type        Balance");
+                int num = 1;
+                foreach (var account in custAccounts)
+                { 
+                    Console.WriteLine(String.Format("{0}.  {1,-19}{2,-20}{3,-20}", num, account.AccountNumber, account.AccountType, account.Balance));
+                    num++;
+                }
+
+                bool valid = false;
+                while (!valid)
+                {
+                    Console.WriteLine();
+                    Console.Write("Which account?: ");
+                    var input = Console.ReadLine();
+                    if (!int.TryParse(input, out accountChoice) || accountChoice < 1 || accountChoice > num)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Invalid Input. Please Try Again");
+                    }
+                    else
+                    {
+                        valid = true;
+                    }
+                }
+            }
+            bool validDeposit = false;
+            while (!validDeposit)
+            {
+                Console.Write("Enter Dollar Amount to Deposit: ");
+                var deposit = Console.ReadLine();
+
+                if (!int.TryParse(deposit, out var option) || option < 0)
+                {
+                    Console.Clear();
+                    Console.WriteLine("Invalid Input. Please Try Again");
+                }
+                else
+                {
+                    validDeposit = true;
+                    db.Deposit(option, currentLogin, custAccounts[accountChoice-1].AccountNumber);
+                    db.AddFundsAccount(option, custAccounts[accountChoice - 1].AccountNumber);
+                }
+            }
+            
+            
         }
 
     }
