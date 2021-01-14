@@ -67,7 +67,8 @@ Enter an option: ";
                 Console.Write("Login ID: ");
                 var loginID = Console.ReadLine();
                 Console.Write("Password: ");
-                var password = Console.ReadLine();
+                string password = PasswordBuilder().ToString();
+                Console.WriteLine();
 
                 currentLogin = db.CheckLogin(loginID, password);
                 if (currentLogin != null)
@@ -81,6 +82,29 @@ Enter an option: ";
                     Console.WriteLine("Invalid Login. Please try again...");
                 }
             }
+        }
+
+        //Password string builder as Console.ReadLine doesnt allow for hidden input
+        private StringBuilder PasswordBuilder()
+        {
+            StringBuilder password = new StringBuilder();
+            bool finished = false;
+            char finishChar = '\r';
+            while (!finished)
+            {
+                ConsoleKeyInfo consoleKeyInfo = Console.ReadKey(true);
+                char passwordChar = consoleKeyInfo.KeyChar;
+                if (passwordChar == finishChar)
+                {
+                    finished = true;
+                }
+                else
+                {
+                    password.Append(passwordChar.ToString());
+                }
+            }
+
+            return password;
         }
 
     }
