@@ -64,14 +64,15 @@ Enter an option: ";
         private void MainMenu()
         {
             string mainMenu = @"
+Main Menu
 ==========
 1. Deposit Funds
 2. Withdraw Funds
 3. Transfer Funds
 
-Enter and option: ";
-
-            Console.WriteLine(mainMenu);
+Enter an option: ";
+            Console.WriteLine("Welcome " + db.GetName(currentLogin.CustomerID));
+            Console.Write(mainMenu);
 
             bool valid = false;
             while (!valid)
@@ -122,7 +123,6 @@ Enter and option: ";
                 {
                     valid = true;
                     Console.Clear();
-                    Console.WriteLine("Welcome " + db.GetName(currentLogin.CustomerID));
                     MainMenu();
                 }
                 else
@@ -205,11 +205,10 @@ Enter and option: ";
                 {
                     validDeposit = true;
                     db.Deposit(option, currentLogin, custAccounts[accountChoice-1].AccountNumber);
-                    db.AddFundsAccount(option, custAccounts[accountChoice - 1].AccountNumber);
                 }
             }
-            
-            
+            Console.Clear();
+            MainMenu();
         }
 
     }

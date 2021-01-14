@@ -179,6 +179,7 @@ namespace s3783258_a1.repository
             return name;
         }
 
+        //Creates transaction and adjusts balance
         public void Deposit(int deposit, Login currentLogin, int accountNumber)
         {
             using var connection = new SqlConnection(connectionString);
@@ -203,9 +204,19 @@ namespace s3783258_a1.repository
             command.Parameters.AddWithValue("@Comment", transaction.Comment);
             command.Parameters.AddWithValue("@TransactionTimeUtc", transaction.TransactionTimeUtc);
 
+            //Executes the transaction creation
             command.ExecuteNonQuery();
+
+            var balanceCMD = connection.CreateCommand();
+            balanceCMD.CommandText = "UPDATE [dbo].[Account] SET Balance = Balance + @Funds WHERE AccountNumber = @AccountNumber";
+            balanceCMD.Parameters.AddWithValue("@Funds", deposit);
+            balanceCMD.Parameters.AddWithValue("@AccountNumber", accountNumber);
+
+            //Executes the balance adjustment
+            balanceCMD.ExecuteNonQuery();
         }
 
+        //Returns all the login accounts from the db
         public List<Account> GetLoginAccounts (Login currentLogin)
         {
             using var connection = new SqlConnection(connectionString);
@@ -226,20 +237,6 @@ namespace s3783258_a1.repository
             }).ToList();
 
             return accounts;
-        }
-
-        //Change balance in account table
-        public void AddFundsAccount(int funds, int accountNumber)
-        {
-            using var connection = new SqlConnection(connectionString);
-            connection.Open();
-
-            var command = connection.CreateCommand();
-            command.CommandText = "UPDATE [dbo].[Account] SET Balance = Balance + @Funds WHERE AccountNumber = @AccountNumber";
-            command.Parameters.AddWithValue("@Funds", funds);
-            command.Parameters.AddWithValue("@AccountNumber", accountNumber);
-
-            command.ExecuteNonQuery();
         }
     }
 }
