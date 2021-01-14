@@ -1,4 +1,5 @@
-﻿using System;
+﻿using s3783258_a1.repository;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -17,6 +18,11 @@ Enter an option: ";
         public void WelcomeMenu()
         {
             Console.Write(welcomeMenu);
+
+            DatabaseAccess db = new DatabaseAccess();
+            db.CreateTables();
+            db.PopulateDatabase();
+
 
             bool valid = false;
             while (!valid)

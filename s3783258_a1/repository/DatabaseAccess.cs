@@ -8,13 +8,22 @@ using System.IO;
 using System.Data;
 using s3783258_a1.utilities;
 using s3783258_a1.model;
+using Microsoft.Extensions.Configuration;
 
 namespace s3783258_a1.repository
 {
     class DatabaseAccess
     {
+        private string connectionString;
+
+        public DatabaseAccess() {
+            var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+            connectionString = configuration["ConnectionString"];
+        }
+
+
         //Creates the tables in the database given in the connection string
-        public bool CreateTables(string connectionString)
+        public bool CreateTables()
         {
             using var connection = new SqlConnection(connectionString);
             connection.Open();
@@ -34,7 +43,7 @@ namespace s3783258_a1.repository
         }
 
         //Checks to see if there are any rows in any table.
-        public bool DataCount(string connectionString)
+        private bool DataCount()
         {
             using var connection = new SqlConnection(connectionString);
             connection.Open();
@@ -53,9 +62,9 @@ namespace s3783258_a1.repository
         }
 
         //Populate the database from webservice if there are no rows
-        public void PopulateDatabase(string connectionString)
+        public void PopulateDatabase()
         {
-            if (DataCount(connectionString))
+            if (DataCount())
             {
                 using var connection = new SqlConnection(connectionString);
                 connection.Open();
