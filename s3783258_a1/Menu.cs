@@ -8,13 +8,7 @@ namespace s3783258_a1
 {
     class Menu
     {
-        string welcomeMenu = @"
-  Welcome
-==========
-1. Login
-2. Quit
-
-Enter an option: ";
+        
 
         Login currentLogin;
         DatabaseAccess db;
@@ -24,8 +18,16 @@ Enter an option: ";
             db = new DatabaseAccess();
         }
 
+        //Welcome menu for login
         public void WelcomeMenu()
         {
+            string welcomeMenu = @"
+  Welcome
+==========
+1. Login
+2. Quit
+
+Enter an option: ";
             Console.Write(welcomeMenu);
             db.CreateTables();
             db.PopulateDatabase();
@@ -58,7 +60,49 @@ Enter an option: ";
             }
 
         }
+        //Main Menu after user logs in
+        public void MainMenu()
+        {
+            string mainMenu = @"
+==========
+1. Deposit Funds
+2. Withdraw Funds
+3. Transfer Funds
 
+Enter and option: ";
+
+            bool valid = false;
+            while (!valid)
+            {
+                var input = Console.ReadLine();
+                if (!int.TryParse(input, out var option) || option < 1 || option > 3)
+                {
+                    Console.Clear();
+                    Console.WriteLine("Invalid Input. Please Try Again");
+                    Console.WriteLine(mainMenu);
+                }
+
+                switch (option)
+                {
+                    case 1:
+                        valid = true;
+                        Console.Clear();
+                        break;
+                    case 2:
+                        valid = true;
+                        Console.Clear();
+                        break;
+                    case 3:
+                        valid = true;
+                        Console.Clear();
+                        break;
+                }
+            }
+
+            Console.WriteLine(mainMenu);
+        }
+
+        //Login with hidden input and comparing login with db
         public void Login()
         {
             bool valid = false;
@@ -71,10 +115,13 @@ Enter an option: ";
                 Console.WriteLine();
 
                 currentLogin = db.CheckLogin(loginID, password);
+                //See if login exist, if not try again
                 if (currentLogin != null)
                 {
                     valid = true;
+                    Console.Clear();
                     Console.WriteLine("Welcome " + db.GetName(currentLogin.CustomerID));
+                    MainMenu();
                 }
                 else
                 {
@@ -90,6 +137,7 @@ Enter an option: ";
             StringBuilder password = new StringBuilder();
             bool finished = false;
             char finishChar = '\r';
+            //Repeat inputs until return key
             while (!finished)
             {
                 ConsoleKeyInfo consoleKeyInfo = Console.ReadKey(true);
