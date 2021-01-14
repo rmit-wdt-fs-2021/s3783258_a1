@@ -1,4 +1,5 @@
-﻿using s3783258_a1.repository;
+﻿using s3783258_a1.model;
+using s3783258_a1.repository;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,11 +16,17 @@ namespace s3783258_a1
 
 Enter an option: ";
 
+        Login currentLogin;
+        DatabaseAccess db;
+
+        public Menu()
+        {
+            db = new DatabaseAccess();
+        }
+
         public void WelcomeMenu()
         {
             Console.Write(welcomeMenu);
-
-            DatabaseAccess db = new DatabaseAccess();
             db.CreateTables();
             db.PopulateDatabase();
 
@@ -40,6 +47,7 @@ Enter an option: ";
                 {
                     case 1:
                         valid = true;
+                        Console.Clear();
                         Login();
                         break;
                     case 2:
@@ -53,10 +61,26 @@ Enter an option: ";
 
         public void Login()
         {
-            Console.Clear();
-            Console.WriteLine("Login ID: ");
-            var loginID = Console.ReadLine();
-            
+            bool valid = false;
+            while (!valid)
+            {
+                Console.Write("Login ID: ");
+                var loginID = Console.ReadLine();
+                Console.Write("Password: ");
+                var password = Console.ReadLine();
+
+                currentLogin = db.CheckLogin(loginID, password);
+                if (currentLogin != null)
+                {
+                    valid = true;
+                    Console.WriteLine("Welcome " + db.GetName(currentLogin.CustomerID));
+                }
+                else
+                {
+                    Console.Clear();
+                    Console.WriteLine("Invalid Login. Please try again...");
+                }
+            }
         }
 
     }

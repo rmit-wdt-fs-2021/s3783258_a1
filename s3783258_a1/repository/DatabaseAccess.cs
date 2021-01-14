@@ -9,6 +9,7 @@ using System.Data;
 using s3783258_a1.utilities;
 using s3783258_a1.model;
 using Microsoft.Extensions.Configuration;
+using SimpleHashing;
 
 namespace s3783258_a1.repository
 {
@@ -136,5 +137,46 @@ namespace s3783258_a1.repository
             }
         }
 
+        public Login CheckLogin(string loginID, string password)
+        {
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "Select * FROM [dbo].[Login]";
+
+            var table = new DataTable();
+            new SqlDataAdapter(command).Fill(table);
+            List<Login> logins = table.Select().Select(x => new Login
+            {
+                LoginID = (string)x["LoginID"],
+                CustomerID = (int)x["CustomerID"],
+                PasswordHash = (string)x["PasswordHash"]
+            }).ToList();
+
+
+            foreach (var login in logins)
+            {
+                if (login.LoginID == loginID && PBKDF2.Verify(login.PasswordHash, password))
+                {
+                    return login;
+                }
+            }
+            return null;
+
+        }
+
+        public string GetName(int customerID)
+        {
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "Select Name FROM [dbo].[Customer] WHERE CustomerID = @customerID";
+            command.Parameters.AddWithValue("customerID", customerID);
+            string name = (string) command.ExecuteScalar();
+
+            return name;
+        }
     }
 }
