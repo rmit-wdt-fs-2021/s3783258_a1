@@ -69,7 +69,8 @@ Main Menu
 1. Deposit Funds
 2. Withdraw Funds
 3. Transfer Funds
-4. Logout
+4. My Statements
+5. Logout
 
 Enter an option: ";
             Console.WriteLine("Welcome " + db.GetName(currentLogin.CustomerID));
@@ -101,6 +102,10 @@ Enter an option: ";
                         TransferMenu();
                         break;
                     case 4:
+                        valid = true;
+                        MyStatements();
+                        break;
+                    case 5:
                         valid = true;
                         Console.Clear();
                         currentLogin = null;
@@ -273,6 +278,32 @@ Enter an option: ";
 
                 MainMenu();
             }
+        }
+
+        public void MyStatements()
+        {
+            Console.Clear();
+            string myStatements = @"
+My Statements
+=============
+";
+            List<Account> custAccounts = db.GetLoginAccounts(currentLogin);
+
+            Console.WriteLine(myStatements);
+            int accountChoice = ChooseAccount(custAccounts);
+
+            List<Transaction> transactions = db.GetTransactions(custAccounts[accountChoice-1].AccountNumber);
+
+            if (transactions.Count != 0)
+            {
+                Console.WriteLine("Transaction ID   Type     AccNumber   Destination    Amount      Transaction Date               Comment");
+                foreach(var transaction in transactions)
+                {
+                    Console.WriteLine(String.Format("{0,-17}{1,-9}{2,-12}{3,-15}{4,-12:0.00}{5,-23}\t{6}", transaction.TransactionID, transaction.TransactionType,
+                        transaction.AccountNumber, transaction.DestinationAccountNumber, transaction.Amount, transaction.TransactionTimeUtc, transaction.Comment));
+                }
+            }
+            
         }
 
         //Prints Accounts in a structured format
