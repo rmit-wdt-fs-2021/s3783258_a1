@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Data;
 using s3783258_a1.utilities;
-using s3783258_a1.model;
 using Microsoft.Extensions.Configuration;
 using SimpleHashing;
+using Models;
 
 namespace s3783258_a1.repository
 {

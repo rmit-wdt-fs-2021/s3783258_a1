@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
-using s3783258_a1.model;
 using Newtonsoft.Json;
+using Models;
 
 namespace s3783258_a1.utilities
 {

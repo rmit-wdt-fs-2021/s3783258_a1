@@ -1,15 +1,14 @@
-﻿using s3783258_a1.model;
-using s3783258_a1.repository;
+﻿using s3783258_a1.repository;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Models;
 
 namespace s3783258_a1
 {
     class Menu
     {
         
-
         Login currentLogin;
         DatabaseAccess db;
 
