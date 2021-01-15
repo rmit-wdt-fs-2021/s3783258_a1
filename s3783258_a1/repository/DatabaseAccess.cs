@@ -180,7 +180,7 @@ namespace s3783258_a1.repository
         }
 
         //Creates transaction and adjusts balance
-        public void Deposit(int deposit, Login currentLogin, int accountNumber)
+        public void Deposit(double deposit, Login currentLogin, int accountNumber)
         {
             using var connection = new SqlConnection(connectionString);
             connection.Open();
@@ -240,7 +240,7 @@ namespace s3783258_a1.repository
         }
 
         //Creates transaction and adjusts balance
-        public void Withdraw(int withdraw, Login currentLogin, int accountNumber)
+        public bool Withdraw(double withdraw, Login currentLogin, int accountNumber)
         {
             using var connection = new SqlConnection(connectionString);
             connection.Open();
@@ -248,32 +248,55 @@ namespace s3783258_a1.repository
             var command = new SqlCommand("CreateTransaction", connection);
             command.CommandType = CommandType.StoredProcedure;
 
+            //Check balance is correct 
+            double balance = CheckBalance(accountNumber);
+            if (balance - withdraw >= 0)
+            {
 
-            Transaction transaction = new Transaction();
-            transaction.TransactionType = 'W';
-            transaction.AccountNumber = accountNumber;
-            transaction.DestinationAccountNumber = accountNumber;
-            transaction.Amount = withdraw;
-            transaction.Comment = "Withdraw";
-            transaction.TransactionTimeUtc = DateTime.UtcNow;
+                Transaction transaction = new Transaction();
+                transaction.TransactionType = 'W';
+                transaction.AccountNumber = accountNumber;
+                transaction.DestinationAccountNumber = accountNumber;
+                transaction.Amount = withdraw;
+                transaction.Comment = "Withdraw";
+                transaction.TransactionTimeUtc = DateTime.UtcNow;
 
-            command.Parameters.AddWithValue("@TransactionType", transaction.TransactionType);
-            command.Parameters.AddWithValue("@AccountNumber", transaction.AccountNumber);
-            command.Parameters.AddWithValue("@DestinationAccountNumber", transaction.DestinationAccountNumber);
-            command.Parameters.AddWithValue("@Amount", transaction.Amount);
-            command.Parameters.AddWithValue("@Comment", transaction.Comment);
-            command.Parameters.AddWithValue("@TransactionTimeUtc", transaction.TransactionTimeUtc);
+                command.Parameters.AddWithValue("@TransactionType", transaction.TransactionType);
+                command.Parameters.AddWithValue("@AccountNumber", transaction.AccountNumber);
+                command.Parameters.AddWithValue("@DestinationAccountNumber", transaction.DestinationAccountNumber);
+                command.Parameters.AddWithValue("@Amount", transaction.Amount);
+                command.Parameters.AddWithValue("@Comment", transaction.Comment);
+                command.Parameters.AddWithValue("@TransactionTimeUtc", transaction.TransactionTimeUtc);
 
-            //Executes the transaction creation
-            command.ExecuteNonQuery();
+                //Executes the transaction creation
+                command.ExecuteNonQuery();
 
-            var balanceCMD = connection.CreateCommand();
-            balanceCMD.CommandText = "UPDATE [dbo].[Account] SET Balance = Balance - @Funds WHERE AccountNumber = @AccountNumber";
-            balanceCMD.Parameters.AddWithValue("@Funds", withdraw);
-            balanceCMD.Parameters.AddWithValue("@AccountNumber", accountNumber);
+                var balanceCMD = connection.CreateCommand();
+                balanceCMD.CommandText = "UPDATE [dbo].[Account] SET Balance = Balance - @Funds WHERE AccountNumber = @AccountNumber";
+                balanceCMD.Parameters.AddWithValue("@Funds", withdraw);
+                balanceCMD.Parameters.AddWithValue("@AccountNumber", accountNumber);
 
-            //Executes the balance adjustment
-            balanceCMD.ExecuteNonQuery();
+                //Executes the balance adjustment
+                balanceCMD.ExecuteNonQuery();
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public double CheckBalance(int accountNumber)
+        {
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT Balance FROM [dbo].[Account] WHERE AccountNumber = @AccountNumber";
+            command.Parameters.AddWithValue("@AccountNumber", accountNumber);
+
+            return Convert.ToDouble((decimal)command.ExecuteScalar());
         }
     }
 }

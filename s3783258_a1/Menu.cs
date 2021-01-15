@@ -196,21 +196,29 @@ Enter an option: ";
                 Console.Write("Enter Dollar Amount to " + type + ": ");
                 var amount = Console.ReadLine();
 
-                if (!int.TryParse(amount, out var option) || option < 0)
+                if (!double.TryParse(amount, out var option) || option < 0)
                 {
                     Console.Clear();
                     Console.WriteLine("Invalid Input. Please Try Again");
                 }
                 else
                 {
-                    validAmount = true;
                     if (type == "Deposit")
                     {
                         db.Deposit(option, currentLogin, custAccounts[accountChoice - 1].AccountNumber);
+                        validAmount = true;
                     }
                     else
                     {
-                        db.Withdraw(option, currentLogin, custAccounts[accountChoice - 1].AccountNumber);
+                        if (!db.Withdraw(option, currentLogin, custAccounts[accountChoice - 1].AccountNumber))
+                        {
+                            Console.WriteLine();
+                            Console.WriteLine("Error: Not enough funds available");
+                        }
+                        else
+                        {
+                            validAmount = true;
+                        }
                     }
                     
                 }
@@ -219,6 +227,7 @@ Enter an option: ";
             MainMenu();
         }
 
+        //Prints Accounts in a structured format
         private int PrintAccounts(List<Account> custAccounts)
         {
             Console.WriteLine("Accounts for " + db.GetName(currentLogin.CustomerID) + ":");
