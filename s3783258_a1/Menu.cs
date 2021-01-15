@@ -290,6 +290,7 @@ My Statements
             List<Account> custAccounts = db.GetLoginAccounts(currentLogin);
 
             int accountChoice = ChooseAccount(custAccounts);
+            Console.Clear();
 
             List<Transaction> transactions = db.GetTransactions(custAccounts[accountChoice-1].AccountNumber);
 
@@ -304,6 +305,7 @@ My Statements
                 char next = '$';
                 char result = '\n';
                 Console.WriteLine(myStatements);
+                Console.WriteLine("Current Account Balance: " + db.CheckBalance(custAccounts[accountChoice - 1].AccountNumber));
 
                 //If there are transactions in list then print
                 if (transactions.Count != 0)
