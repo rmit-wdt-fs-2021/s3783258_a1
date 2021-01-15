@@ -342,7 +342,6 @@ namespace s3783258_a1.repository
             var command = new SqlCommand("CreateTransaction", connection);
             command.CommandType = CommandType.StoredProcedure;
 
-
             Transaction transaction = new Transaction();
             transaction.TransactionType = 'T';
             transaction.AccountNumber = startAccount;

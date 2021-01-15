@@ -289,21 +289,87 @@ My Statements
 ";
             List<Account> custAccounts = db.GetLoginAccounts(currentLogin);
 
-            Console.WriteLine(myStatements);
             int accountChoice = ChooseAccount(custAccounts);
 
             List<Transaction> transactions = db.GetTransactions(custAccounts[accountChoice-1].AccountNumber);
 
-            if (transactions.Count != 0)
+            //Calculate whole pages
+            double pages = Convert.ToDouble(transactions.Count) / 4;
+            double wholePages = Math.Ceiling(pages);
+            var currentPage = 0;
+            bool viewing = true;
+            while (viewing)
             {
-                Console.WriteLine("Transaction ID   Type     AccNumber   Destination    Amount      Transaction Date               Comment");
-                foreach(var transaction in transactions)
+                char previous = '$';
+                char next = '$';
+                char result = '\n';
+                Console.WriteLine(myStatements);
+
+                //If there are transactions in list then print
+                if (transactions.Count != 0)
                 {
-                    Console.WriteLine(String.Format("{0,-17}{1,-9}{2,-12}{3,-15}{4,-12:0.00}{5,-23}\t{6}", transaction.TransactionID, transaction.TransactionType,
-                        transaction.AccountNumber, transaction.DestinationAccountNumber, transaction.Amount, transaction.TransactionTimeUtc, transaction.Comment));
+                    Console.WriteLine("Transaction ID   Type     AccNumber   Destination    Amount      Transaction Date               Comment");
+                    for (int i = currentPage*4; i < ((currentPage*4)+4) && i<transactions.Count; i++)
+                    {
+                        var transaction = transactions[i];
+                        Console.WriteLine(String.Format("{0,-17}{1,-9}{2,-12}{3,-15}{4,-12:0.00}{5,-23}\t{6}", transaction.TransactionID, transaction.TransactionType,
+                            transaction.AccountNumber, transaction.DestinationAccountNumber, transaction.Amount, transaction.TransactionTimeUtc, transaction.Comment));
+                    }
+
+                    Console.WriteLine("Page " + (currentPage + 1) + " of " + wholePages);
+                    Console.WriteLine();
+
+                    //Allow previous or next to be valid options for selection
+                    if (currentPage != 0)
+                    {
+                        previous = 'p';
+                        Console.WriteLine("p - Previous Page");
+                    }
+                    if (currentPage != (wholePages-1))
+                    {
+                        next = 'n';
+                        Console.WriteLine("n - Next Page");
+                    }
+
+                    Console.WriteLine("e - Exit/Go Back");
+
+                    //Check to see if valid and that previous or next are also valid options
+                    bool valid = false;
+                    while (!valid)
+                    {
+                        Console.Write("Enter Option: ");
+                        var input = Console.ReadLine();
+
+                        if (!char.TryParse(input, out result) || (result != previous && result != next && result != 'e'))
+                        {
+                            Console.WriteLine();
+                            Console.WriteLine("Invalid Input. Please Try Again");
+                        }
+                        else
+                        {
+                            valid = true;
+                        }
+
+                    }
+
+                    switch (result)
+                    {
+                        case 'n':
+                            currentPage++;
+                            Console.Clear();
+                            break;
+                        case 'p':
+                            currentPage--;
+                            Console.Clear();
+                            break;
+                        case 'e':
+                            viewing = false;
+                            Console.Clear();
+                            MainMenu();
+                            break;
+                    }
                 }
             }
-            
         }
 
         //Prints Accounts in a structured format
@@ -335,8 +401,6 @@ My Statements
                 }
             }
             return accountChoice;
-       
         }
-
     }
 }
