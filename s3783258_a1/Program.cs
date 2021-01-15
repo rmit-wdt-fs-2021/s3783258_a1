@@ -1,12 +1,15 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using s3783258_a1.repository;
+using System;
 
 namespace s3783258_a1
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            Console.WriteLine("Hello World!");
+            Menu menu = new Menu();
+            menu.WelcomeMenu();
         }
     }
 }
