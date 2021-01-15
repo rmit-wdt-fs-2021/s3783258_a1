@@ -26,4 +26,10 @@
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Models">
+      <HintPath>..\..\ClassLibrary\ClassLibrary2\bin\Debug\net5.0\Models.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
