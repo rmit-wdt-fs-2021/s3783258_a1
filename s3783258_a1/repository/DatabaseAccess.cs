@@ -363,5 +363,33 @@ namespace s3783258_a1.repository
             RemoveFunds(connection, amount, startAccount);
             AddFunds(connection, amount, destAccount);
         }
+
+        //Returns a list of all transactions for a given account number
+        public List<Transaction> GetTransactions(int accountNumber)
+        {
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM [dbo].[Transaction] WHERE AccountNumber = @AccountNumber";
+            command.Parameters.AddWithValue("@AccountNumber", accountNumber);
+
+            var table = new DataTable();
+            new SqlDataAdapter(command).Fill(table);
+            List<Transaction> transactions = table.Select().Select(x => new Transaction
+            {
+                TransactionID = (int)x["TransactionID"],
+                TransactionType = Convert.ToChar((string)x["TransactionType"]),
+                AccountNumber = (int)x["AccountNumber"],
+                DestinationAccountNumber = (int)x["DestinationAccountNumber"],
+                Amount = Convert.ToDouble((decimal)x["Amount"]),
+                Comment = (string)x["Comment"],
+                TransactionTimeUtc = (DateTime)x["TransactionTimeUtc"]
+
+            }).ToList();
+
+            return transactions;
+        }
+
     }
 }
