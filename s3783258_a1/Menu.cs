@@ -227,6 +227,7 @@ Enter an option: ";
             {
                 bool valid = false;
                 int accountChoice = ChooseAccount(custAccounts);
+                startAccount = custAccounts[accountChoice - 1].AccountNumber;
                 while (!valid)
                 {
                     Console.WriteLine();
@@ -236,11 +237,14 @@ Enter an option: ";
                     {
                         Console.WriteLine();
                         Console.WriteLine("Invalid Input. Please Try Again");
+                    } else if (startAccount == destAccount)
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("Cant Transfer to Same Account Number. Please Try Again");
                     }
                     else
                     {
                         valid = true;
-                        startAccount = custAccounts[accountChoice - 1].AccountNumber;
                     }
                 }
 
