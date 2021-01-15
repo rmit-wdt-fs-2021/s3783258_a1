@@ -98,7 +98,7 @@ Enter an option: ";
                         break;
                     case 3:
                         valid = true;
-                        Console.Clear();
+                        TransferMenu();
                         break;
                     case 4:
                         valid = true;
@@ -169,19 +169,90 @@ Enter an option: ";
         {
             Console.Clear();
             List<Account> custAccounts = db.GetLoginAccounts(currentLogin);
-            int accountChoice = 0;
-            if (custAccounts != null)
+            if (custAccounts.Count != 0)
             {
-                int num = PrintAccounts(custAccounts);
+                int accountChoice = ChooseAccount(custAccounts);
+            
+                bool validAmount = false;
+                while (!validAmount)
+                {
+                    Console.Write("Enter Dollar Amount to " + type + ": ");
+                    var amount = Console.ReadLine();
 
+                    if (!double.TryParse(amount, out var option) || option < 0)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Invalid Input. Please Try Again");
+                    }
+                    else
+                    {
+                        if (type == "Deposit")
+                        {
+                            db.Deposit(option, currentLogin, custAccounts[accountChoice - 1].AccountNumber);
+                            validAmount = true;
+                        }
+                        else
+                        {
+                            if (!db.Withdraw(option, currentLogin, custAccounts[accountChoice - 1].AccountNumber))
+                            {
+                                Console.WriteLine();
+                                Console.WriteLine("Error: Not enough funds available");
+                            }
+                            else
+                            {
+                                validAmount = true;
+                            }
+                        }
+
+                    }
+                }
+                Console.Clear();
+            }
+            else
+            {
+                Console.WriteLine("No Accounts Available For This User");
+                Console.WriteLine();
+            }
+            MainMenu();
+        }
+
+        private void TransferMenu()
+        {
+            Console.Clear();
+            List<Account> custAccounts = db.GetLoginAccounts(currentLogin);
+            int startAccount = 0;
+            int destAccount = 0;
+            int amount = 0;
+            if (custAccounts.Count != 0)
+            {
                 bool valid = false;
+                int accountChoice = ChooseAccount(custAccounts);
                 while (!valid)
                 {
                     Console.WriteLine();
-                    Console.Write("Which account?: ");
+                    Console.Write("Enter Destination Account Number: ");
                     var input = Console.ReadLine();
-                    if (!int.TryParse(input, out accountChoice) || accountChoice < 1 || accountChoice > num)
+                    if (!int.TryParse(input, out destAccount) || input.Length != 4 || !db.CheckAccountNumber(destAccount))
                     {
+                        Console.WriteLine();
+                        Console.WriteLine("Invalid Input. Please Try Again");
+                    }
+                    else
+                    {
+                        valid = true;
+                        startAccount = custAccounts[accountChoice - 1].AccountNumber;
+                    }
+                }
+
+                valid = false;
+                while (!valid)
+                {
+                    Console.WriteLine();
+                    Console.Write("Enter Transfer Amount Value: ");
+                    var input = Console.ReadLine();
+                    if (!int.TryParse(input, out amount) || amount <=0 || (db.CheckBalance(startAccount)-amount)<0)
+                    {
+                        Console.WriteLine();
                         Console.WriteLine("Invalid Input. Please Try Again");
                     }
                     else
@@ -189,46 +260,19 @@ Enter an option: ";
                         valid = true;
                     }
                 }
-            }
-            bool validAmount = false;
-            while (!validAmount)
-            {
-                Console.Write("Enter Dollar Amount to " + type + ": ");
-                var amount = Console.ReadLine();
 
-                if (!double.TryParse(amount, out var option) || option < 0)
-                {
-                    Console.Clear();
-                    Console.WriteLine("Invalid Input. Please Try Again");
-                }
-                else
-                {
-                    if (type == "Deposit")
-                    {
-                        db.Deposit(option, currentLogin, custAccounts[accountChoice - 1].AccountNumber);
-                        validAmount = true;
-                    }
-                    else
-                    {
-                        if (!db.Withdraw(option, currentLogin, custAccounts[accountChoice - 1].AccountNumber))
-                        {
-                            Console.WriteLine();
-                            Console.WriteLine("Error: Not enough funds available");
-                        }
-                        else
-                        {
-                            validAmount = true;
-                        }
-                    }
-                    
-                }
+                Console.Write("Enter Transaction Comment (Optional): ");
+                string comment = Console.ReadLine();
+
+                db.Transfer(amount, comment, startAccount, destAccount);
+                Console.Clear();
+
+                MainMenu();
             }
-            Console.Clear();
-            MainMenu();
         }
 
         //Prints Accounts in a structured format
-        private int PrintAccounts(List<Account> custAccounts)
+        private int ChooseAccount(List<Account> custAccounts)
         {
             Console.WriteLine("Accounts for " + db.GetName(currentLogin.CustomerID) + ":");
             Console.WriteLine("    Account Number     Account Type        Balance");
@@ -238,7 +282,25 @@ Enter an option: ";
                 Console.WriteLine(String.Format("{0}.  {1,-19}{2,-20}{3,-20}", num, account.AccountNumber, account.AccountType, account.Balance));
                 num++;
             }
-            return num;
+            int accountChoice = 0;
+
+            bool valid = false;
+            while (!valid)
+            {
+                Console.WriteLine();
+                Console.Write("Which account?: ");
+                var input = Console.ReadLine();
+                if (!int.TryParse(input, out accountChoice) || accountChoice < 1 || accountChoice > custAccounts.Count)
+                {
+                    Console.WriteLine("Invalid Input. Please Try Again");
+                }
+                else
+                {
+                    valid = true;
+                }
+            }
+            return accountChoice;
+       
         }
 
     }

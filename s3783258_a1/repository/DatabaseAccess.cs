@@ -271,14 +271,6 @@ namespace s3783258_a1.repository
                 //Executes the transaction creation
                 command.ExecuteNonQuery();
 
-                var balanceCMD = connection.CreateCommand();
-                balanceCMD.CommandText = "UPDATE [dbo].[Account] SET Balance = Balance - @Funds WHERE AccountNumber = @AccountNumber";
-                balanceCMD.Parameters.AddWithValue("@Funds", withdraw);
-                balanceCMD.Parameters.AddWithValue("@AccountNumber", accountNumber);
-
-                //Executes the balance adjustment
-                balanceCMD.ExecuteNonQuery();
-
                 return true;
             }
             else
@@ -297,6 +289,79 @@ namespace s3783258_a1.repository
             command.Parameters.AddWithValue("@AccountNumber", accountNumber);
 
             return Convert.ToDouble((decimal)command.ExecuteScalar());
+        }
+
+        public bool CheckAccountNumber(int accountNumber)
+        {
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(*) FROM [dbo].Account WHERE AccountNumber = @AccountNumber";
+            command.Parameters.AddWithValue("@AccountNumber", accountNumber);
+
+            int boolean = (int)command.ExecuteScalar();
+
+            if (boolean == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public void AddFunds(SqlConnection connection, double amount, int accountNumber)
+        {
+            var balanceCMD = connection.CreateCommand();
+            balanceCMD.CommandText = "UPDATE [dbo].[Account] SET Balance = Balance + @Funds WHERE AccountNumber = @AccountNumber";
+            balanceCMD.Parameters.AddWithValue("@Funds", amount);
+            balanceCMD.Parameters.AddWithValue("@AccountNumber", accountNumber);
+
+            //Executes the balance adjustment
+            balanceCMD.ExecuteNonQuery();
+        }
+
+        public void RemoveFunds(SqlConnection connection, double amount, int accountNumber)
+        {
+            var balanceCMD = connection.CreateCommand();
+            balanceCMD.CommandText = "UPDATE [dbo].[Account] SET Balance = Balance - @Funds WHERE AccountNumber = @AccountNumber";
+            balanceCMD.Parameters.AddWithValue("@Funds", amount);
+            balanceCMD.Parameters.AddWithValue("@AccountNumber", accountNumber);
+
+            //Executes the balance adjustment
+            balanceCMD.ExecuteNonQuery();
+        }
+
+        public void Transfer(double amount, string comment, int startAccount, int destAccount)
+        {
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            var command = new SqlCommand("CreateTransaction", connection);
+            command.CommandType = CommandType.StoredProcedure;
+
+
+            Transaction transaction = new Transaction();
+            transaction.TransactionType = 'T';
+            transaction.AccountNumber = startAccount;
+            transaction.DestinationAccountNumber = destAccount;
+            transaction.Amount = amount;
+            transaction.Comment = comment;
+            transaction.TransactionTimeUtc = DateTime.UtcNow;
+
+            command.Parameters.AddWithValue("@TransactionType", transaction.TransactionType);
+            command.Parameters.AddWithValue("@AccountNumber", transaction.AccountNumber);
+            command.Parameters.AddWithValue("@DestinationAccountNumber", transaction.DestinationAccountNumber);
+            command.Parameters.AddWithValue("@Amount", transaction.Amount);
+            command.Parameters.AddWithValue("@Comment", transaction.Comment);
+            command.Parameters.AddWithValue("@TransactionTimeUtc", transaction.TransactionTimeUtc);
+
+            command.ExecuteNonQuery();
+
+            RemoveFunds(connection, amount, startAccount);
+            AddFunds(connection, amount, destAccount);
         }
     }
 }
